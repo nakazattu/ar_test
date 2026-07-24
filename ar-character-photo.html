@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ARキャラクター記念撮影</title>
+<script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+<style>
+  body { margin: 0; overflow: hidden; font-family: sans-serif; }
+
+  #overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 999;
+    text-align: center;
+    padding: 12px 16px;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  #shutter {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: #fff;
+    border: 4px solid #ddd;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+  #shutter:active { background: #eee; }
+
+  #marker-guide {
+    position: fixed;
+    bottom: 110px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+  }
+
+  #flash {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1000;
+    transition: opacity 0.15s;
+  }
+
+  #captured {
+    position: fixed;
+    inset: 0;
+    z-index: 1001;
+    background: #000;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  #captured img { max-width: 92%; max-height: 76%; border-radius: 8px; }
+  #captured .btns { margin-top: 16px; display: flex; gap: 12px; }
+  #captured button {
+    padding: 10px 20px;
+    border-radius: 24px;
+    border: none;
+    font-size: 14px;
+  }
+  #saveBtn { background: #2ecc71; color: #fff; }
+  #retryBtn { background: #555; color: #fff; }
+</style>
+</head>
+<body>
+
+<div id="overlay">📷 マーカーをカメラに映すとキャラクターが登場します</div>
+<div id="marker-guide">下のマーカー画像をスマホに表示 or 印刷して床に置いてください</div>
+<button id="shutter"></button>
+<div id="flash"></div>
+
+<div id="captured">
+  <img id="capturedImg" src="">
+  <div class="btns">
+    <button id="saveBtn">保存</button>
+    <button id="retryBtn">撮り直す</button>
+  </div>
+</div>
+
+<a-scene
+  embedded
+  vr-mode-ui="enabled: false"
+  renderer="logarithmicDepthBuffer: true; alpha: true"
+  arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+>
+  <a-assets>
+    <!-- ▼ここを自分のキャラクター透過PNGのURLに差し替えてください -->
+    <img id="character" src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@master/aframe/examples/image-tracking/assets/image-tracking/main.png" crossorigin="anonymous">
+  </a-assets>
+
+  <!-- Hiroマーカー(AR.js標準サンプルマーカー)。実運用では独自マーカーに変更可能 -->
+  <a-marker preset="hiro">
+    <a-image
+      src="#character"
+      width="2"
+      height="2.6"
+      position="0 1.3 0"
+      look-at="[camera]"
+    ></a-image>
+  </a-marker>
+
+  <a-entity camera></a-entity>
+</a-scene>
+
+<script>
+  const shutter = document.getElementById('shutter');
+  const flash = document.getElementById('flash');
+  const captured = document.getElementById('captured');
+  const capturedImg = document.getElementById('capturedImg');
+  const saveBtn = document.getElementById('saveBtn');
+  const retryBtn = document.getElementById('retryBtn');
+
+  shutter.addEventListener('click', () => {
+    flash.style.opacity = '1';
+    setTimeout(() => { flash.style.opacity = '0'; }, 150);
+
+    // canvas上のARシーン(カメラ映像+CG)をまとめてキャプチャ
+    const canvas = document.querySelector('canvas.a-canvas');
+    if (!canvas) return;
+    setTimeout(() => {
+      const dataUrl = canvas.toDataURL('image/png');
+      capturedImg.src = dataUrl;
+      captured.style.display = 'flex';
+    }, 100);
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = capturedImg.src;
+    a.download = 'ar-photo-' + Date.now() + '.png';
+    a.click();
+  });
+
+  retryBtn.addEventListener('click', () => {
+    captured.style.display = 'none';
+  });
+</script>
+
+</body>
+</html>
