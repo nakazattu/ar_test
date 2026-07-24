@@ -108,6 +108,27 @@
     border-radius: 6px;
     word-break: break-all;
   }
+
+  #charSwitcher {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  #charSwitcher button {
+    flex: 1;
+    min-width: 60px;
+    padding: 8px 4px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 12px;
+  }
+  #charSwitcher button.active {
+    background: #ff6b81;
+    font-weight: bold;
+  }
 </style>
 </head>
 <body>
@@ -118,6 +139,7 @@
 <div id="debugPanel">
   <div class="row"><span>高さ(Y)</span><input type="range" id="posY" min="-2" max="4" step="0.05" value="1.3"><span id="posYval">1.3</span></div>
   <div class="current" id="currentPos">position="0 1.3 0"</div>
+  <div id="charSwitcher"></div>
 </div>
 <button id="shutter"></button>
 <div id="flash"></div>
@@ -137,15 +159,19 @@
   arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
 >
   <a-assets>
-    <!-- ▼ここを自分のキャラクター透過PNGのURLに差し替えてください -->
-    <img id="character" src="https://img.atwiki.jp/genlip/attach/28/3110/1001001-min.png" crossorigin="anonymous">
+    <!-- ▼ここに切り替えたいキャラクター画像を登録してください(名前は自由に変更可) -->
+    <img id="character1" src="https://img.atwiki.jp/genlip/attach/28/3110/1001001-min.png" crossorigin="anonymous">
+    <img id="character2" src="https://img.atwiki.jp/genlip/attach/29/3111/1002001-min.png" crossorigin="anonymous">
+    <img id="character3" src="https://img.atwiki.jp/genlip/attach/31/389/tachie_chilno.png" crossorigin="anonymous">
+    <img id="character4" src="https://img.atwiki.jp/genlip/attach/33/400/Sakuya_gensou.png" crossorigin="anonymous">
+    <img id="character5" src="https://img.atwiki.jp/genlip/attach/37/441/Reisen_gensou.png" crossorigin="anonymous">
   </a-assets>
 
   <!-- Hiroマーカー(AR.js標準サンプルマーカー)。実運用では独自マーカーに変更可能 -->
   <a-marker preset="hiro">
     <a-image
       id="charImage"
-      src="#character"
+      src="#character1"
       width="2"
       height="2.6"
       position="0 1.3 0"
@@ -157,6 +183,28 @@
 </a-scene>
 
 <script>
+  // ▼キャラクター画像の登録(ここに増やしていけばボタンも自動で増えます)
+  const characters = [
+    { id: 'character1', label: '霊夢' },
+    { id: 'character2', label: '魔理沙' },
+    { id: 'character3', label: 'チルノ' },
+    { id: 'character4', label: '咲夜' },
+    { id: 'character5', label: '鈴仙' },
+  ];
+
+  const charSwitcher = document.getElementById('charSwitcher');
+  characters.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.textContent = c.label;
+    if (i === 0) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      charImage.setAttribute('src', `#${c.id}`);
+      charSwitcher.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+    charSwitcher.appendChild(btn);
+  });
+
   // ▼高さ(Y座標)調整用スライダー
   const charImage = document.getElementById('charImage');
   const posY = document.getElementById('posY');
