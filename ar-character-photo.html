@@ -78,12 +78,49 @@
   }
   #saveBtn { background: #2ecc71; color: #fff; }
   #retryBtn { background: #555; color: #fff; }
+
+  #debugPanel {
+    position: fixed;
+    top: 56px;
+    left: 8px;
+    right: 8px;
+    z-index: 999;
+    background: rgba(0,0,0,0.65);
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+  }
+  #debugPanel .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  #debugPanel .row span:first-child { width: 46px; }
+  #debugPanel input[type=range] { flex: 1; }
+  #debugPanel .row span:last-child { width: 40px; text-align: right; }
+  #debugPanel .current {
+    margin-top: 6px;
+    font-family: monospace;
+    background: rgba(255,255,255,0.15);
+    padding: 4px 6px;
+    border-radius: 6px;
+    word-break: break-all;
+  }
 </style>
 </head>
 <body>
 
 <div id="overlay">📷 マーカーをカメラに映すとキャラクターが登場します</div>
 <div id="marker-guide">下のマーカー画像をスマホに表示 or 印刷して床に置いてください</div>
+
+<div id="debugPanel">
+  <div class="row"><span>X回転</span><input type="range" id="rotX" min="-180" max="180" value="0"><span id="rotXval">0</span></div>
+  <div class="row"><span>Y回転</span><input type="range" id="rotY" min="-180" max="180" value="0"><span id="rotYval">0</span></div>
+  <div class="row"><span>Z回転</span><input type="range" id="rotZ" min="-180" max="180" value="0"><span id="rotZval">0</span></div>
+  <div class="current" id="currentRot">rotation="0 0 0"</div>
+</div>
 <button id="shutter"></button>
 <div id="flash"></div>
 
@@ -109,11 +146,12 @@
   <!-- Hiroマーカー(AR.js標準サンプルマーカー)。実運用では独自マーカーに変更可能 -->
   <a-marker preset="hiro">
     <a-image
+      id="charImage"
       src="#character"
       width="2"
       height="2.6"
-      position="0 1.5 0"
-      rotation="0 0 90"
+      position="0 1.3 0"
+      rotation="0 0 0"
     ></a-image>
   </a-marker>
 
@@ -121,6 +159,28 @@
 </a-scene>
 
 <script>
+  // ▼回転デバッグ用スライダー
+  const charImage = document.getElementById('charImage');
+  const rotX = document.getElementById('rotX');
+  const rotY = document.getElementById('rotY');
+  const rotZ = document.getElementById('rotZ');
+  const rotXval = document.getElementById('rotXval');
+  const rotYval = document.getElementById('rotYval');
+  const rotZval = document.getElementById('rotZval');
+  const currentRot = document.getElementById('currentRot');
+
+  function updateRotation() {
+    const x = rotX.value, y = rotY.value, z = rotZ.value;
+    rotXval.textContent = x;
+    rotYval.textContent = y;
+    rotZval.textContent = z;
+    charImage.setAttribute('rotation', `${x} ${y} ${z}`);
+    currentRot.textContent = `rotation="${x} ${y} ${z}"`;
+  }
+  rotX.addEventListener('input', updateRotation);
+  rotY.addEventListener('input', updateRotation);
+  rotZ.addEventListener('input', updateRotation);
+
   const shutter = document.getElementById('shutter');
   const flash = document.getElementById('flash');
   const captured = document.getElementById('captured');
